@@ -101,14 +101,18 @@ sensor:
     update_interval: 1s
     internal: "True"
 
-  # Load current (RMS) flowing through the dimmer
+  # Load current (RMS) flowing through the dimmer.
+  # Note: ESPHome's ct_clamp publishes the AC RMS voltage of the source as "A"
+  # (1 V/A); the board trimmer sets the CT gain and `current_calibration_factor`
+  # rescales the result (tune on the bench).
   - platform: ct_clamp
     id: load_current
     name: "Dimmer Load Current"
     device_class: current
     unit_of_measurement: "A"
     sensor: load_current_voltage
-    calibration_factor: ${current_calibration_factor}
+    filters:
+      - multiply: ${current_calibration_factor}
     sample_duration: 200ms
     update_interval: 1s
     on_value:
