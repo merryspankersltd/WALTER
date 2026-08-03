@@ -62,9 +62,8 @@ sensor:
   # Raw heatsink NTC voltage
   - platform: adc
     id: heatsink_voltage
-    pin:
-      number: ${dimmer_temp_pin}
-      attenuation: 11db
+    pin: ${dimmer_temp_pin}
+    attenuation: 11db
     update_interval: 1s
     internal: "True"
 
@@ -96,9 +95,8 @@ sensor:
   # Raw CT output voltage
   - platform: adc
     id: load_current_voltage
-    pin:
-      number: ${dimmer_current_pin}
-      attenuation: 11db
+    pin: ${dimmer_current_pin}
+    attenuation: 11db
     update_interval: 1s
     internal: "True"
 

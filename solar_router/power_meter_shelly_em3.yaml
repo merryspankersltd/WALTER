@@ -26,11 +26,17 @@ esphome:
 #
 # Package variables (vars):
 #   power_meter_ip_address   (required)  IP / hostname of the Shelly EM3 Pro.
-#   power_meter_id           (optional)  EM component id, default "0".
+#   power_meter_emeter_id    (optional)  EM component id, default "0".
 #   power_meter_auth_header  (optional)  HTTP Authorization header (Basic auth).
 #   show_phase_power         (optional)  expose per-phase W sensors, default "False".
 
 substitutions:
+  # Same defaults as power_meter_common.yaml - re-declared here because a
+  # substitution block overriding the merged one replaces it entirely.
+  power_meter_activated_at_start: "0"
+  power_sign: "1"
+  consumption_sensor_internal: "false"
+  # This package specifics
   power_meter_emeter_id: "0"
   power_meter_auth_header: ""
   show_phase_power: "False"
