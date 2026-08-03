@@ -16,19 +16,9 @@ vers un chauffe-eau et maintient l'injection réseau aussi faible que possible.
 ## Pourquoi la somme triphasée ?
 
 Sur un abonnement triphasé, le compteur additionne les trois phases et ne
-facture que la valeur **nette**, donc `+500 +800 −1200 = +100` est une
-importation de 100 W — et le bon moment pour chauffer l'eau, c'est quand cette
-somme devient négative, c'est-à-dire qu'il existe un vrai surplus après
-compensation inter-phases :
+facture que la valeur **nette**. Lorsqu'une phase produit plus (photovoltaïque) que les deux autres ne consomment, c'est le bon moment pour chauffer de l'eau.
 
-```
-S_grid = P_A + P_B + P_C     (positif = import, négatif = surplus)
-```
-
-Piloter cette somme (plutôt qu'une seule phase) protège aussi les limites par
-phase : le routeur ne s'allume que lorsque *toute l'installation* est en
-surplus, il ne peut donc jamais pousser une phase au-delà de sa limite. Voir
-`docs/fr/strategy.md` pour le raisonnement complet.
+En se basant sur les mesures d'un compteur intelligent, Walter pilote la résistance du chauffe-eau au plus près de cette valeur. Voir `docs/fr/strategy.md` pour le raisonnement complet.
 
 ## Matériel
 
