@@ -27,10 +27,10 @@ full reasoning.
 | Part | Model |
 |------|-------|
 | MCU | ESP32 (esp32dev, esp-idf framework) |
-| Regulator | RobotDyn RBD-340 triac dimmer 40 A "fan version" |
+| Regulator | RobotDyn AC dimmer 40 A "with current sensor" (heatsink NTC + CT, always-on fan) |
 | Meter | Shelly EM3 Pro / Pro 3EM (HTTP RPC, polled locally — no HA needed) |
 | Load | Pure resistive load up to 3000 W (water boiler) |
-| Safety | boiler thermostat, optionally a temperature limiter (DS18B20 or HA temperature) |
+| Safety | boiler thermostat + local dimmer safety (heatsink thermal cutout, current-sensor health alarms) |
 
 - Wiring: [docs/en/wiring_rbd40.md](docs/en/wiring_rbd40.md)
 - Safety procedure:
@@ -64,9 +64,10 @@ packages:
         vars:
           green_led_pin: GPIO18
           yellow_led_pin: GPIO19
-      - path: solar_router/temperature_limiter_home_assistant.yaml
+      - path: solar_router/dimmer_safety.yaml
         vars:
-          temperature_sensor: "sensor.water_tank_temperature"
+          dimmer_temp_pin: GPIO34
+          dimmer_current_pin: GPIO35
           red_led_pin: GPIO21
 ```
 

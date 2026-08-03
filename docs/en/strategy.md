@@ -85,11 +85,22 @@ most expensive hours — the ideal moment to self-consume.
 
 ## Safety layers
 
-1. **Temperature limiter** (tank temp → drops to 0 % at `Stop temperature`,
-   resumes below `Restart temperature`).
-2. **Meter fail-safe**: no / stale data → boiler OFF.
-3. **Boiler own thermostat** stays in the circuit (also protects at 100 %).
-4. Bench-track before installing (see `bench_test.md`).
+1. **Dimmer board safety** (`dimmer_safety.yaml`): heatsink NTC thermal
+   cutout — drops to 0 % at `heatsink_stop_temperature` (default 80 °C),
+   resumes below `heatsink_restart_temperature` (default 60 °C); works with no
+   WiFi / HA. Sensor loss (NaN) also trips the cutout (fail-safe).
+2. **Overcurrent cutout**: load current ≥ `overcurrent_current` (default
+   12 A) → 0 % until it falls back under the restart threshold.
+3. **Health alarms** (no power cut, for information): "Triac Stuck ON"
+   (current flowing while the regulator is closed), "Boiler Not Powered"
+   (regulator open, no current), "Current Sensor Failure".
+4. **Meter fail-safe**: no / stale data → boiler OFF.
+5. **Boiler own thermostat** stays in the circuit (also protects at 100 %).
+6. Bench-track before installing (see `bench_test.md`).
+
+Note: the `dimmer_safety` package owns the shared `safety_limit` flag — the
+temperature limiter packages (tank / DS18B20) are mutually exclusive with it;
+pick one per configuration.
 
 ## Not in v1 (parked)
 
@@ -99,6 +110,10 @@ most expensive hours — the ideal moment to self-consume.
 - PV production sensor (needs a spare EM channel or the micro-inverter API) to
   compute the true pre-boiler consumption and improve energy accounting.
 - Grid-limit supervision.
+- Fan speed control from the heatsink temperature (the fan is hardwired
+  always-on; a PWM control is possible but adds a failure mode).
+- Real diverted-power metering from the CT (I_RMS × voltage) to replace the
+  theoretical energy counter.
 
 ## Why fork instead of starting from scratch
 

@@ -1,5 +1,6 @@
 # ----------------------------------------------------------------------------------------------------
-# WALTER - Solar Router for a hot-water boiler (ESP32 + RBD-340 40A fan + Shelly EM3 Pro)
+# WALTER - Solar Router for a hot-water boiler
+# (ESP32 + RobotDyn AC dimmer 40A with current sensor + Shelly EM3 Pro)
 # ----------------------------------------------------------------------------------------------------
 # WALTER drives the boiler from the *3-phase arithmetic sum* measured as close as
 # possible to the main meter, exactly like it is billed:  S_grid = P_A + P_B + P_C
@@ -7,10 +8,12 @@
 #    - S_grid  -> surplus after cross-phase netting (boiler is dimmed up to absorb it)
 #
 # Hardware:
-#   Board   : ESP32 (esp32dev) + RobotDyn RBD-340 / dimmer 40A "fan version"
+#   Board   : ESP32 (esp32dev) + RobotDyn AC dimmer 40A "with current sensor"
+#             (heatsink NTC + 5V fan + built-in CT). FAN pin hardwired to 5V (fan always on).
 #   Meter   : Shelly EM3 Pro / Pro 3EM, polled locally over HTTP (no HA dependency)
 #   Load    : 2400 W immersion element (water boiler)
-#   Safety  : temperature limiter fed with a tank temperature from Home Assistant
+#   Safety  : local dimmer safety package (heatsink thermal cutout + current-sensor health),
+#             boiler thermostat remains in the circuit
 #
 # ----------------------------------------------------------------------------------------------------
 # ESPHome configuration - This part depends on your hardware target
@@ -79,7 +82,7 @@ packages:
           # power_meter_emeter_id: "0"      # only if the EM component id differs
           # show_phase_power: "False"       # set to "True" while tuning
 
-      # ---------------- Regulator: RBD-340 / dimmer 40A (fan version) ---------------
+      # ---------------- Regulator: dimmer 40A (with current sensor) ---------------
       # Z-C = zero-cross detector, GATE = triac gate. Pick interrupt-capable pins.
       - path: solar_router/regulator_triac.yaml
         vars:
@@ -92,12 +95,22 @@ packages:
           green_led_pin: GPIO18
           yellow_led_pin: GPIO19
 
-      # ---------------- Safety: temperature limiter (tank temp from HA) ----------------
-      # The engine immediately drops to 0 % when this temp reaches "Stop temperature".
-      - path: solar_router/temperature_limiter_home_assistant.yaml
+      # ---------------- Safety: dimmer board safety (local, no HA needed) ----------------
+      # Local heatsink thermal cutout (works even if WiFi/HA are down) + CT current-sensor
+      # health alarms. TEMP = GPIO34, CUR = GPIO35 (ADC1, input-only pins).
+      # The engine immediately drops to 0 % when the heatsink reaches "80 °C" (default),
+      # and restarts under "60 °C". Boiler thermostat remains the final protection.
+      # NOTE: only ONE safety limiter package per configuration (they share safety_limit).
+      - path: solar_router/dimmer_safety.yaml
         vars:
-          temperature_sensor: "sensor.water_tank_temperature"
+          dimmer_temp_pin: GPIO34
+          dimmer_current_pin: GPIO35
           red_led_pin: GPIO21
+          # heatsink_stop_temperature: "80"
+          # heatsink_restart_temperature: "60"
+          # overcurrent_current: "12.0"
+          # overcurrent_restart_current: "8.0"
+          # current_calibration_factor: "1.0"    # tune on the bench (see docs/en/bench_test.md)
 
       # ---------------- Optional: energy diverted counter ---------------------------
       # Set the "Load power" number (W) in HA to 2400. It counts  level% * load power.

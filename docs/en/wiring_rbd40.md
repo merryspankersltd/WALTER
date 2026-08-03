@@ -1,4 +1,4 @@
-# Wiring — ESP32 + RBD-340 (Dimmer 40A "fan version")
+# Wiring — ESP32 + RobotDyn AC dimmer 40A "with current sensor"
 
 > ⚠️ This is a **230 V** installation. Isolate the circuit, follow local
 > regulations, and have the final connection checked by a qualified electrician.
@@ -7,29 +7,57 @@
 
 ## Module used
 
-RobotDyn-style triac dimmer, 1 channel, **40 A**, with heatsink + cooling fan
-(referenced as "RBD-340 / dimmer 40A fan version" or similar). It includes:
+RobotDyn-style triac dimmer, 1 channel, **40 A**, premium variant "with
+current sensor" (heatsink NTC + 5 V fan + built-in CT current sensor). It
+includes:
 
 * **Isolated mains side**: `AC-IN` / `AC-OUT` (connected in series with the load)
 * **Zero-cross detector**: `Z-C` output (a pulse at each mains zero-crossing)
-* **Triac gate input**: `DIM` / `PWM` — the phase-control ("firing") signal
-* **Control side**: `VCC` (3.3 V logic — genuine RobotDyn supports 3.3 V),
-  `GND`
-* **Cooling fan**: powered from a **separate 5 VDC rail** on the 40 A fan
-  version; on board revisions the fan is thermally auto-managed
+* **Triac gate input**: `DIM` — the phase-control ("firing") signal
+* **Control side**: `VCC` (3.3 V logic — the board supports 3.3/5 V), `GND`
+* **Heatsink NTC**: `TEMP` analog output (heatsink temperature)
+* **Cooling fan**: `5V` + `FAN` (speed control) + 2-pin `FAN CON` (fan wires)
+* **Current sensor**: `CUR` analog output (load current, CT) + a small
+  "current precision" trimmer to calibrate its gain
+
+### Low-voltage side pinout (as marked on the board)
+
+Group of 8 pins:
+
+| `TEMP` | `FAN` | `CUR` | `5V` |
+|---|---|---|---|
+| `VCC` | `GND` | `Z-C` | `DIM` |
+
+plus:
+
+* a screwdriver trimmer labeled **"current precision"** — CT gain calibration
+  (set on the bench, see `bench_test.md`)
+* a 2-pin connector labeled **`FAN CON`** — the fan itself (power from the
+  board's 5 V rail)
+
+### Connections (ESP32)
 
 | Dimmer pin | ESP32 pin (example) | ESPHome role |
 |---|---|---|
 | `Z-C` | `GPIO23` | `regulator_zero_crossing_pin` (interrupt input) |
 | `DIM` | `GPIO17` | `regulator_gate_pin` (triac gate) |
-| `VCC` | `3V3` | module logic supply |
+| `VCC` | `3V3` | module logic + sensors supply — **use 3.3 V** so `TEMP`/`CUR` stay within ADC range |
 | `GND` | `GND` | common ground, isolated side |
-| `5V` (fan) | `5V` | auxiliary supply of the fan section only |
-| `FAN`* | `GPIO25` (optional) | fan gate on revisions that expose it |
+| `TEMP` | `GPIO34` | `dimmer_temp_pin` (ADC input, heatsink NTC) |
+| `CUR` | `GPIO35` | `dimmer_current_pin` (ADC input, CT) |
+| `5V` | `5V` | 5 V rail for the fan section |
+| `FAN` | tied to `5V` | **hardwired always-on cooling** (see below) |
+| `FAN CON` | — | fan connector (already wired to the board) |
 
-\* the fan is usually auto-managed by the on-board thermal controller; if the
-board exposes a `FAN` PWM input instead, connect it to any PWM-capable GPIO and
-turn it on whenever the load switches.
+> **Fan at 100 % all the time — by design.** Tie the `FAN` pin to the `5V` pin
+> so the fan runs at full speed even before the ESP firmware boots (and even if
+> the ESP or the WiFi dies). A firmware-driven fan adds a failure mode (stuck
+> fan controller = silent overheating); the always-on fan removes it. Noise and
+> lifespan are non-issues in a boiler closet.
+
+> **`VCC` at 3.3 V.** The `TEMP` and `CUR` outputs are dividers/CT outputs
+> referenced to `VCC`; feeding the board with 5 V can push them above 3.3 V and
+> damage the ESP32 ADC pins. The board officially supports 3.3 V logic.
 
 ### Power side (230 V)
 
@@ -55,13 +83,18 @@ The boiler's own thermostat stays in the circuit and keeps protecting at
 |------|----------|
 | `GPIO17` | triac gate (`regulator_gate_pin`) |
 | `GPIO23` | zero-cross detector (`regulator_zero_crossing_pin`) |
+| `GPIO34` | heatsink NTC (`dimmer_temp_pin`, ADC1 input-only) |
+| `GPIO35` | load current CT (`dimmer_current_pin`, ADC1 input-only) |
 | `GPIO18` | green LED (regulation active / diverting) |
 | `GPIO19` | yellow LED (network / meter status) |
-| `GPIO21` | red LED (temperature safety limit reached) |
+| `GPIO21` | red LED (dimmer safety active: heatsink overheat / overcurrent) |
 
 Notes:
 
 - Any ESP32 GPIO can sense zero-cross, but the gate needs a driving-capable pin
   (use classic GPIOs 0-33, not the input-only 34–39).
-- Keep the Z-C wire short and away from the AC side to avoid false triggers from
-  triac switching spikes; the ESPHome `ac_dimmer` component debounces them.
+- `TEMP` and `CUR` are analog — use ADC-capable pins (ESP32 ADC1: 32–39; the
+  example uses the input-only 34/35).
+- Keep the Z-C wire short and away from the AC side to avoid false triggers
+  from triac switching spikes; the ESPHome `ac_dimmer` component debounces
+  them.

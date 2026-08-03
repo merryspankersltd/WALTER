@@ -25,10 +25,10 @@ En se basant sur les mesures d'un compteur intelligent, Walter pilote la résist
 | Pièce | Modèle |
 |-------|--------|
 | MCU | ESP32 (esp32dev, framework esp-idf) |
-| Régulateur | Gradateur triac RobotDyn RBD-340 40 A « version ventilée » |
+| Régulateur | Gradateur triac RobotDyn 40 A « avec capteur de courant » (NTC dissipateur + CT, ventilateur permanent) |
 | Compteur | Shelly EM3 Pro / Pro 3EM (HTTP RPC, interrogé localement — pas besoin de HA) |
 | Charge | Charge résistive pure jusqu'à 3000 W (chauffe-eau) |
-| Sécurité | thermostat du chauffe-eau, optionnellement limiteur de température (DS18B20 ou température HA) |
+| Sécurité | thermostat du chauffe-eau + sécurité locale du gradateur (coupure thermique du dissipateur, alarmes santé du capteur de courant) |
 
 - Câblage : [docs/fr/wiring_rbd40.md](docs/fr/wiring_rbd40.md)
 - Procédure de sécurité :
@@ -64,9 +64,10 @@ packages:
         vars:
           green_led_pin: GPIO18
           yellow_led_pin: GPIO19
-      - path: solar_router/temperature_limiter_home_assistant.yaml
+      - path: solar_router/dimmer_safety.yaml
         vars:
-          temperature_sensor: "sensor.water_tank_temperature"
+          dimmer_temp_pin: GPIO34
+          dimmer_current_pin: GPIO35
           red_led_pin: GPIO21
 ```
 

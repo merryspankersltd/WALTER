@@ -92,11 +92,23 @@ l'autoconsommation.
 
 ## Niveaux de sécurité
 
-1. **Limiteur de température** (température de la cuve → chute à 0 % à la
-   `Stop temperature`, reprise sous la `Restart temperature`).
-2. **Sécurité compteur** : pas de données / données périmées → ballon éteint.
-3. **Le thermostat du ballon reste dans le circuit** (protège aussi à 100 %).
-4. Test sur banc avant installation (voir `bench_test.md`).
+1. **Sécurité carte gradateur** (`dimmer_safety.yaml`) : coupure thermique
+   locale par NTC du dissipateur — chute à 0 % à `heatsink_stop_temperature`
+   (défaut 80 °C), reprise sous `heatsink_restart_temperature` (défaut 60 °C) ;
+   fonctionne sans Wi-Fi / HA. La perte du capteur (NaN) déclenche aussi la
+   coupure (sécurité).
+2. **Coupure surintensité** : courant de charge ≥ `overcurrent_current`
+   (défaut 12 A) → 0 % jusqu'à retour sous le seuil de reprise.
+3. **Alarmes de santé** (sans coupure, pour information) : « Triac Stuck ON »
+   (courant alors que le régulateur est fermé), « Boiler Not Powered »
+   (régulateur ouvert, aucun courant), « Current Sensor Failure ».
+4. **Sécurité compteur** : pas de données / données périmées → ballon éteint.
+5. **Le thermostat du ballon reste dans le circuit** (protège aussi à 100 %).
+6. Test sur banc avant installation (voir `bench_test.md`).
+
+Remarque : le package `dimmer_safety` gère le drapeau partagé `safety_limit` —
+les packages limiteurs de température (cuve / DS18B20) sont mutuellement
+exclusifs ; n'en choisir qu'un par configuration.
 
 ## Pas en v1 (en attente)
 
@@ -107,6 +119,11 @@ l'autoconsommation.
   micro-onduleur) pour calculer la consommation réelle avant le ballon et
   améliorer le comptage d'énergie.
 - Supervision de la limite de puissance souscrite (Grid-limit).
+- Commande de vitesse du ventilateur depuis la température du dissipateur (le
+  ventilateur est câblé en permanence à 100 % ; une commande PWM est possible
+  mais ajoute un mode de défaillance).
+- Comptage de puissance réelle déviée depuis le CT (I_RMS × tension) pour
+  remplacer le compteur d'énergie théorique.
 
 ## Pourquoi un fork plutôt qu'un projet existant
 
