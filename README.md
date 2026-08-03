@@ -9,7 +9,7 @@
 > adding native support for the **Shelly EM3 Pro / Pro 3EM** three-phase meter,
 > aimed at diverting photovoltaic surplus to a **hot-water boiler**.
 
-WALTER does exactly what its name says: it redirects the photovoltaic surplus
+WALTER does exactly what he says: it redirects the photovoltaic surplus
 to a boiler and keeps grid injection as low as possible.
 
 ## Why the 3-phase sum?
