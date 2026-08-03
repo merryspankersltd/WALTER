@@ -69,14 +69,6 @@ packages:
           red_led_pin: GPIO21
 ```
 
-## Limites connues (v1)
-
-- Le comptage d'énergie (`total_energy_diverted`) exige que le limiteur de
-  température de la cuve soit actif, sinon le compteur surestime tant que le
-  thermostat du ballon est ouvert.
-- Le moteur est le régulateur progressif amont ; un branchement PID /
-  prévisions est en attente dans `docs/fr/strategy.md`.
-
 ## Crédits et licence
 
 Construit à partir de
