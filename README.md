@@ -9,25 +9,17 @@
 > adding native support for the **Shelly EM3 Pro / Pro 3EM** three-phase meter,
 > aimed at diverting photovoltaic surplus to a **hot-water boiler**.
 
-It does exactly what its name says: it redirects the photovoltaic surplus to
-the boiler and keeps the tiny export rate — actually the *net* grid exchange —
-close to **0 W**, driving the **3-phase arithmetic sum** (the quantity that is
-billed).
+WALTER does exactly what its name says: it redirects the photovoltaic surplus
+to a boiler and keeps grid injection as low as possible.
 
 ## Why the 3-phase sum?
 
 On a three-phase contract the meter adds the three phases and bills only the
-**net** value, so `+500 +800 −1200 = +100` is a 100 W import — and the right
-time to heat water is when that sum goes negative, i.e. a real surplus exists
-after cross-phase netting:
+**net** value. When one phase produces more (photovoltaic) than the other two
+consume, that's the right time to heat water.
 
-```
-S_grid = P_A + P_B + P_C     (positive = import, negative = surplus)
-```
-
-Controlling this sum (instead of a single phase) also protects the phase
-limits: the router only fires when the *whole installation* is in surplus, so
-it can never push any phase beyond its rating. See `docs/en/strategy.md` for the
+Based on smart-meter readings, WALTER drives the boiler element as close as
+possible to that value. See [docs/strategy.md](docs/en/strategy.md) for the
 full reasoning.
 
 ## Hardware
@@ -37,10 +29,12 @@ full reasoning.
 | MCU | ESP32 (esp32dev, esp-idf framework) |
 | Regulator | RobotDyn RBD-340 triac dimmer 40 A "fan version" |
 | Meter | Shelly EM3 Pro / Pro 3EM (HTTP RPC, polled locally — no HA needed) |
-| Load | 2400 W immersion element (water boiler) |
-| Safety | temperature limiter (DS18B20 or HA temperature) |
+| Load | Pure resistive load up to 3000 W (water boiler) |
+| Safety | boiler thermostat, optionally a temperature limiter (DS18B20 or HA temperature) |
 
-Wiring: `docs/en/wiring_rbd40.md` · Safety procedure: `docs/en/bench_test.md`
+- Wiring: [docs/en/wiring_rbd40.md](docs/en/wiring_rbd40.md)
+- Safety procedure:
+  [docs/en/bench_test.md](docs/en/bench_test.md)
 
 ## Software
 
@@ -75,14 +69,6 @@ packages:
           temperature_sensor: "sensor.water_tank_temperature"
           red_led_pin: GPIO21
 ```
-
-## Known limits (v1)
-
-- Energy accounting (`total_energy_diverted`) requires the tank temperature
-  limiter to be running, otherwise the counter over-counts while the boiler
-  thermostat is open.
-- The engine is the upstream progressive regulator; a PID / forecast wiring-up
-  is parked in `docs/en/strategy.md`.
 
 ## Credits & license
 
