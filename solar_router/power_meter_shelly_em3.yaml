@@ -108,6 +108,24 @@ script:
 
 # Sense the per-phase active powers for debugging / tuning (hidden by default)
 sensor:
+  # Re-declared from power_meter_common.yaml: the '<<' merge only keeps the
+  # FIRST definition of a key, and this file defines its own 'sensor:' section.
+  # The engine depends on these two template sensors.
+  - id: real_power
+    platform: template
+    name: "Real Power"
+    device_class: "power"
+    unit_of_measurement: "W"
+    update_interval: 1s
+
+  - id: consumption
+    platform: template
+    name: "Consumption"
+    device_class: "power"
+    unit_of_measurement: "W"
+    update_interval: 1s
+    internal: ${consumption_sensor_internal}
+
   - platform: template
     id: em3_phase_a_power
     name: "EM3 Phase A Active Power"

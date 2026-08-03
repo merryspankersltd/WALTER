@@ -63,7 +63,7 @@ sensor:
   - platform: adc
     id: heatsink_voltage
     pin: ${dimmer_temp_pin}
-    attenuation: 11db
+    attenuation: 12db
     update_interval: 1s
     internal: "True"
 
@@ -83,9 +83,10 @@ sensor:
     device_class: temperature
     unit_of_measurement: "°C"
     sensor: heatsink_resistance
-    reference_resistance: ${ntc_reference_resistance}
-    reference_temperature: ${ntc_reference_temperature}
-    b_constant: ${ntc_b_coefficient}
+    calibration:
+      b_constant: ${ntc_b_coefficient}
+      reference_resistance: ${ntc_reference_resistance}
+      reference_temperature: ${ntc_reference_temperature}
     filters:
       - median:
           window_size: 5
@@ -96,7 +97,7 @@ sensor:
   - platform: adc
     id: load_current_voltage
     pin: ${dimmer_current_pin}
-    attenuation: 11db
+    attenuation: 12db
     update_interval: 1s
     internal: "True"
 
