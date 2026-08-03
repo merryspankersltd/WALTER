@@ -1,0 +1,58 @@
+# ----------------------------------------------------------------------------------------------------
+# Home Assistant — templates used with WALTER
+# ----------------------------------------------------------------------------------------------------
+# Adapt entity_ids to match your instance, then include this file
+# (e.g. in configuration.yaml:  template: !include templates.yaml)
+#
+# The Shelly EM3 Pro is already in HA via the built-in Shelly integration
+# (this project polls the Shelly directly from the ESP32 for the control loop,
+#  HA here is used for display, tariff logic and the temperature safety).
+
+template:
+  - sensor:
+      # 3-phase arithmetic sum, computed in HA from the Shelly channels.
+      # Should closely match WALTER's `sensor.real_power` (the control signal).
+      - name: "Grid total (3-phase sum)"
+        unique_id: walter_grid_total_3phase
+        unit_of_measurement: "W"
+        device_class: power
+        state_class: measurement
+        state: >
+          {{ (states('sensor.shelly_em3_pro_a_active_power')|float(default=0)
+            + states('sensor.shelly_em3_pro_b_active_power')|float(0)
+            + states('sensor.shelly_em3_pro_c_active_power')|float(0))
+          }}
+        availability: >-
+          {{ ['sensor.shelly_em3_pro_a_active_power',
+              'sensor.shelly_em3_pro_b_active_power',
+              'sensor.shelly_em3_pro_c_active_power']
+              | map('has_value') | min }}
+
+      # Positive surplus = PV output available for WALTER to route
+      - name: "WALTER available surplus"
+        unique_id: "walter_available_surplus"
+        unit_of_measurement: "W"
+        device_class: power
+        state_class: measurement
+        state: >-
+          {{ max(0, -states('sensor.walter_real_power') | float(0)) }}
+        availability: "{{ states('sensor.walter_real_power') | has_value }}"
+
+      # Tank temperature fed to WALTER's "Temperature limiter" package.
+      # Point this at whatever measures your tank: 1-Wire/DS18B20, the HA probe,
+      # a thermometer entity, or an input_number during bench tests.
+      - name: "Water tank temperature"
+        unique_id: "walter_tank_temperature"
+        device_class: "temperature"
+        unit_of_measurement: "°C"
+        state_class: measurement
+        state: "{{ states('sensor.water_tank_probe') | float(60) }}"
+        # NOTE: the fallback 60 °C in the default is a SAFE "hot" value (limits
+        # to 0 % if the probe is unavailable). Provide a real entity.
+
+# (optional) helper where the off-peak tariff signal lives.
+# Replace with the entity of your tariff integration (meter / energy provider).
+input_boolean:
+  off_peak_tariff_active:
+    name: "Off-peak tariff active"
+    icon: mdi:weather-night

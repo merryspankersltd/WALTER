@@ -1,0 +1,111 @@
+# ----------------------------------------------------------------------------------------------------
+# WALTER - Solar Router for a hot-water boiler (ESP32 + RBD-340 40A fan + Shelly EM3 Pro)
+# ----------------------------------------------------------------------------------------------------
+# WALTER drives the boiler from the *3-phase arithmetic sum* measured as close as
+# possible to the main meter, exactly like it is billed:  S_grid = P_A + P_B + P_C
+#    + S_grid  -> importing (boiler stays off)
+#    - S_grid  -> surplus after cross-phase netting (boiler is dimmed up to absorb it)
+#
+# Hardware:
+#   Board   : ESP32 (esp32dev) + RobotDyn RBD-340 / dimmer 40A "fan version"
+#   Meter   : Shelly EM3 Pro / Pro 3EM, polled locally over HTTP (no HA dependency)
+#   Load    : 2400 W immersion element (water boiler)
+#   Safety  : temperature limiter fed with a tank temperature from Home Assistant
+#
+# ----------------------------------------------------------------------------------------------------
+# ESPHome configuration - This part depends on your hardware target
+# ----------------------------------------------------------------------------------------------------
+esphome:
+  name: walter
+  friendly_name: WALTER
+  min_version: 2026.1.0
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+
+# Enable logging
+logger:
+  baud_rate: 115200
+  level: INFO
+  logs:
+    component: ERROR
+    light: ERROR
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: !secret api_encryption_key
+
+# Enable over-the-air updates
+ota:
+  - platform: esphome
+    password: !secret walter_ota_password
+
+# Enable improv serial
+improv_serial:
+
+# WiFi connection
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  reboot_timeout: 24h
+
+# Activate web interface
+web_server:
+  port: 80
+
+# Watchdog needs to be greater than the http_request timeouts
+http_request:
+  timeout: 12s
+
+# ----------------------------------------------------------------------------------------------------
+# Customisation
+# ----------------------------------------------------------------------------------------------------
+packages:
+  solar_router:
+    url: https://github.com/hacf-fr/Solar-Router-for-ESPHome/
+    ref: main
+    refresh: 1d
+    files:
+      - path: solar_router/common.yaml
+
+      # ---------------- Power meter: Shelly EM3 Pro / Pro 3EM ----------------
+      # Resolves the 3-phase arithmetic sum (`total_act_power`) directly, no HA needed.
+      - path: solar_router/power_meter_shelly_em3.yaml
+        vars:
+          power_meter_ip_address: "192.168.1.42"
+          # power_meter_emeter_id: "0"      # only if the EM component id differs
+          # show_phase_power: "False"       # set to "True" while tuning
+
+      # ---------------- Regulator: RBD-340 / dimmer 40A (fan version) ---------------
+      # Z-C = zero-cross detector, GATE = triac gate. Pick interrupt-capable pins.
+      - path: solar_router/regulator_triac.yaml
+        vars:
+          regulator_gate_pin: GPIO17
+          regulator_zero_crossing_pin: GPIO23
+
+      # ---------------- Engine: 1 dimmer, progressive regulation ----------------
+      - path: solar_router/engine_1dimmer.yaml
+        vars:
+          green_led_pin: GPIO18
+          yellow_led_pin: GPIO19
+
+      # ---------------- Safety: temperature limiter (tank temp from HA) ----------------
+      # The engine immediately drops to 0 % when this temp reaches "Stop temperature".
+      - path: solar_router/temperature_limiter_home_assistant.yaml
+        vars:
+          temperature_sensor: "sensor.water_tank_temperature"
+          red_led_pin: GPIO21
+
+      # ---------------- Optional: energy diverted counter ---------------------------
+      # Set the "Load power" number (W) in HA to 2400. It counts  level% * load power.
+      # - path: solar_router/energy_counter_theorical.yaml
+
+      # ---------------- Optional: forced-run during off-peak (HC) ----------------
+      # Force the boiler at 100% between Begin and End even with no sun.
+      # Only useful if the boiler HAS NO classical night-contact upstream of the dimmer.
+      # - path: solar_router/scheduler_forced_run.yaml
+      #   vars:
+      #     scheduler_unique_id: "Night"
