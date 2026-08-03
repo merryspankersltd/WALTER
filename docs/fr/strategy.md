@@ -16,6 +16,8 @@ Sur un abonnement triphasé, le compteur traite **un seul registre arithmétique
 bidirectionnel** : les puissances des trois phases sont additionnées et seule
 la valeur **nette** est facturée. Une exportation de −1200 W sur une phase
 compense entièrement une importation de +1300 W sur les deux autres.
+Référence : règles de comptage / facturation des raccordements triphasés,
+[Enedis (gestionnaire du réseau FR)](https://www.enedis.fr/media/2035/download).
 
 Le seul signal de commande cohérent avec la facturation est donc :
 

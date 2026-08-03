@@ -14,7 +14,8 @@ never balance to zero.
 In a three-phase subscription the billing engine treats **one arithmetic,
 bi-directional register**: the three phase powers are added and only the
 **net** value is billed. An export of −1200 W on one phase fully offsets a
-+1300 W import on the other two.
++1300 W import on the other two. Reference: metering / billing rules for
+three-phase connections, [Enedis (FR grid operator)](https://www.enedis.fr/media/2035/download).
 
 Therefore the only control signal that matches billing is:
 
