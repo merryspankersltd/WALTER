@@ -10,10 +10,8 @@
 > destiné à rediriger le surplus photovoltaïque vers un **chauffe-eau
 > électrique**.
 
-Il fait exactement ce que son nom dit : il redirige le surplus photovoltaïque
-vers le ballon et maintient le petit taux d'exportation — en réalité l'échange
-réseau *net* — proche de **0 W**, en pilotant la **somme arithmétique
-triphasée** (la grandeur facturée).
+Walter fait exactement ce qu'il dit : il redirige le surplus photovoltaïque
+vers un chauffe-eau et maintient l'injection réseau aussi faible que possible.
 
 ## Pourquoi la somme triphasée ?
 
