@@ -18,7 +18,7 @@ vers un chauffe-eau et maintient l'injection réseau aussi faible que possible.
 Sur un abonnement triphasé, le compteur additionne les trois phases et ne
 facture que la valeur **nette**. Lorsqu'une phase produit plus (photovoltaïque) que les deux autres ne consomment, c'est le bon moment pour chauffer de l'eau.
 
-En se basant sur les mesures d'un compteur intelligent, Walter pilote la résistance du chauffe-eau au plus près de cette valeur. Voir [docs/fr/strategy.md] pour le raisonnement complet.
+En se basant sur les mesures d'un compteur intelligent, Walter pilote la résistance du chauffe-eau au plus près de cette valeur. Voir [/docs/fr/strategy.md] pour le raisonnement complet.
 
 ## Matériel
 
