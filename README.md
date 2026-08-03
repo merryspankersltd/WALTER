@@ -48,7 +48,7 @@ full reasoning.
 ```yaml
 packages:
   solar_router:
-    url: https://github.com/hacf-fr/Solar-Router-for-ESPHome/
+    url: https://github.com/merryspankersltd/WALTER/
     ref: main
     refresh: 1d
     files:

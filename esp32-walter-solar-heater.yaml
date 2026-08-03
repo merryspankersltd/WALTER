@@ -68,7 +68,9 @@ http_request:
 # ----------------------------------------------------------------------------------------------------
 packages:
   solar_router:
-    url: https://github.com/hacf-fr/Solar-Router-for-ESPHome/
+    # WALTER fork: contains the upstream packages PLUS the fork-specific ones
+    # (power_meter_shelly_em3.yaml, dimmer_safety.yaml) that only exist here.
+    url: https://github.com/merryspankersltd/WALTER/
     ref: main
     refresh: 1d
     files:
@@ -78,7 +80,7 @@ packages:
       # Resolves the 3-phase arithmetic sum (`total_act_power`) directly, no HA needed.
       - path: solar_router/power_meter_shelly_em3.yaml
         vars:
-          power_meter_ip_address: "192.168.1.42"
+          power_meter_ip_address: "192.168.1.110"
           # power_meter_emeter_id: "0"      # only if the EM component id differs
           # show_phase_power: "False"       # set to "True" while tuning
 
