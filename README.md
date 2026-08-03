@@ -45,7 +45,7 @@ Wiring: `docs/wiring_rbd40.md` · Safety procedure: `docs/bench_test.md`
 - **Firmware**: ESPHome. `esp32-walter-solar-heater.yaml` + the new package
   `solar_router/power_meter_shelly_em3.yaml` (3-phase meter poller).
 - **Home Assistant**: helper templates & automations in `homeassistant/`
-  (tank-temp safety, HC/HP mode, dashboard).
+  (tank-temp safety, peak/off-peak mode, dashboard).
 
 ### ESPHome config (quick glance)
 
