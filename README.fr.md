@@ -30,8 +30,8 @@ En se basant sur les mesures d'un compteur intelligent, Walter pilote la résist
 | Charge | Charge résistive pure jusqu'à 3000 W (chauffe-eau) |
 | Sécurité | thermostat du chauffe-eau, optionnellement limiteur de température (DS18B20 ou température HA) |
 
-Câblage : `docs/fr/wiring_rbd40.md` · Procédure de sécurité :
-`docs/fr/bench_test.md`
+Câblage : [docs/fr/wiring_rbd40.md](docs/fr/wiring_rbd40.md) · Procédure de sécurité :
+[docs/fr/bench_test.md](docs/fr/bench_test.md)
 
 ## Logiciel
 
