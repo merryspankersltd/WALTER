@@ -88,7 +88,7 @@ most expensive hours — the ideal moment to self-consume.
    resumes below `Restart temperature`).
 2. **Meter fail-safe**: no / stale data → boiler OFF.
 3. **Boiler own thermostat** stays in the circuit (also protects at 100 %).
-4. Bench-track before installing (see `docs/bench_test.md`).
+4. Bench-track before installing (see `bench_test.md`).
 
 ## Not in v1 (parked)
 

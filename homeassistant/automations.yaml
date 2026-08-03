@@ -86,7 +86,7 @@ automation:
 # lives in HA recorder; a history_stats card is enough.
 
 # ---------- 5. HC forced window IF the boiler has NO night contact ----------
-# (only relevant when option 2 in docs/strategy.md applies)
+# (only relevant when option 2 in docs/en/strategy.md applies)
 #  - id: walter_hc_forced_window
 #    alias: "WALTER: forced 100% during off-peak"
 #    trigger:

@@ -1,11 +1,15 @@
 site_name: Solar Router for ESPHome
-repo_url: https://github.com/hacf-fr/Solar-Router-for-ESPHome
+repo_url: https://github.com/merryspankersltd/WALTER
 repo_name: Fork me on GitHub
 edit_uri: ""
-copyright: © Copyright hacf-fr (See authors in github repository) - 2024-2025
+copyright: © Copyright WALTER contributors - 2026
 
 nav:
       - Home: index.md
+      - WALTER:
+              - Strategy: strategy.md
+              - Wiring RBD-340: wiring_rbd40.md
+              - Bench test: bench_test.md
       - Disclamer: disclamer.md
       - Solar Router / Diverter: solar_router.md
       - Hardware: hardware.md
@@ -98,6 +102,7 @@ plugins:
                       nav_translations:
                             About: A propos
                             Alternatives: Alternatives
+                            "Bench test": Test de banc
                             Contributing: Contribution
                             Disclamer: Avertissement
                             Energy Counter: Compteur d'énergie
@@ -114,10 +119,13 @@ plugins:
                             Scheduler: Plannificateur
                             Solar Router / Diverter: Routeur solaire
                             Standalone: Routeur autonome
+                            Strategy: Stratégie
                             Temperature Limiter: Limiteur de température
                             Theorical: Théorique
                             With proxy: Router utilisant un proxy
                             With Solar Optimizer integration: Avec l'utilisation de l'intégration Solar Optimizer
+                            "Wiring RBD-340": Câblage RBD-340
+                            WALTER: WALTER
       - search
       - minify:
               minify_html: true

@@ -25,7 +25,7 @@ S_grid = P_A + P_B + P_C     (positive = import, negative = surplus)
 
 Controlling this sum (instead of a single phase) also protects the phase
 limits: the router only fires when the *whole installation* is in surplus, so
-it can never push any phase beyond its rating. See `docs/strategy.md` for the
+it can never push any phase beyond its rating. See `docs/en/strategy.md` for the
 full reasoning.
 
 ## Hardware
@@ -38,7 +38,7 @@ full reasoning.
 | Load | 2400 W immersion element (water boiler) |
 | Safety | temperature limiter (DS18B20 or HA temperature) |
 
-Wiring: `docs/wiring_rbd40.md` · Safety procedure: `docs/bench_test.md`
+Wiring: `docs/en/wiring_rbd40.md` · Safety procedure: `docs/en/bench_test.md`
 
 ## Software
 
@@ -80,7 +80,7 @@ packages:
   limiter to be running, otherwise the counter over-counts while the boiler
   thermostat is open.
 - The engine is the upstream progressive regulator; a PID / forecast wiring-up
-  is parked in `docs/strategy.md`.
+  is parked in `docs/en/strategy.md`.
 
 ## Credits & license
 

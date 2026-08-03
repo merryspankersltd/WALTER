@@ -45,4 +45,4 @@ HTTP itself and does not need HA to regulate. Home Assistant is used for:
 Any other appliance (second water heater, EV charger, ...) is transparent to
 the loop: WALTER only reads the net 3-phase sum, and large steps caused by
 other loads are absorbed by the engine's up/down reactivity and hysteresis
-(see `docs/strategy.md`).
+(see `docs/en/strategy.md`).
