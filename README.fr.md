@@ -27,8 +27,8 @@ En se basant sur les mesures d'un compteur intelligent, Walter pilote la résist
 | MCU | ESP32 (esp32dev, framework esp-idf) |
 | Régulateur | Gradateur triac RobotDyn RBD-340 40 A « version ventilée » |
 | Compteur | Shelly EM3 Pro / Pro 3EM (HTTP RPC, interrogé localement — pas besoin de HA) |
-| Charge | Résistance 2400 W (chauffe-eau) |
-| Sécurité | limiteur de température (DS18B20 ou température HA) |
+| Charge | Charge résistive pure jusqu'à 3000 W (chauffe-eau) |
+| Sécurité | thermostat du chauffe-eau, optionnellement limiteur de température (DS18B20 ou température HA) |
 
 Câblage : `docs/fr/wiring_rbd40.md` · Procédure de sécurité :
 `docs/fr/bench_test.md`
