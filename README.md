@@ -1,5 +1,7 @@
 # WALTER — Solar Router for ESPHome
 
+**[🇬🇧 English](README.md) · [🇫🇷 Français](README.fr.md)**
+
 **(WALTER Always Loves Tiny Export Rates)**
 
 > **WALTER** is a fork of
