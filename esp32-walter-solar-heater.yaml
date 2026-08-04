@@ -83,6 +83,7 @@ packages:
           power_meter_ip_address: "192.168.1.110"
           # power_meter_emeter_id: "0"      # only if the EM component id differs
           # show_phase_power: "False"       # set to "True" while tuning
+          power_meter_activated_at_start: "0"   # meter starts when "Activate Solar Routing" is ON
 
       # ---------------- Regulator: dimmer 40A (with current sensor) ---------------
       # Z-C = zero-cross detector, GATE = triac gate. Pick interrupt-capable pins.
