@@ -122,6 +122,7 @@ binary_sensor:
   # Any board safety cutout active (heatsink overheat or overcurrent)
   - platform: template
     name: "Dimmer Safety Active"
+    device_class: problem
     lambda: |-
       return id(heatsink_overheat) || id(load_overcurrent);
 

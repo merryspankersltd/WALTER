@@ -5,12 +5,12 @@ instance (device entities have the `salon_` prefix).
 
 ## Modes (4-position selector `input_select.walter_mode`)
 
-| Mode  | HP (peak) hours                | HC (off-peak) window | Meter polling |
-|-------|-------------------------------|----------------------|---------------|
-| OFF   | 0 %                           | 0 %                  | no            |
-| SOLAR | auto routing (capped)         | max_level (100 %)    | HP only       |
-| HC/HP | 0 %                           | max_level (100 %)    | no            |
-| MANUAL| max_level                     | max_level            | no            |
+| Mode  | HP (peak) hours                | HC night window (20:00-06:00) | Meter polling |
+|-------|-------------------------------|-------------------------------|---------------|
+| OFF   | 0 %                           | 0 %                           | no            |
+| SOLAR | auto routing (capped)         | max_level (100 %)             | HP only       |
+| HC/HP | 0 %                           | max_level (100 %)             | no            |
+| MANUAL| max_level                     | max_level                     | no            |
 
 - One global cap: `input_number.walter_max_level` (0-100, default 100). In
   MANUAL mode it IS the dial; in HC-window modes it is the heating level; it
@@ -19,15 +19,30 @@ instance (device entities have the `salon_` prefix).
 - `HC/HP` is the debug / "for some reason" classic mode (e.g. isolating a
   conflict with other line equipment). It intentionally does NOT do solar
   routing.
+- **Forcing is NIGHT-ONLY** (band 20:00-06:00). Between 06:00 and 20:00
+  nothing ever forces 100 %: SOLAR keeps auto-routing, HC/HP stays 0 %.
+  A daytime HC window deliberately does NOT trigger grid heating - the day
+  overlaps the solar-production window, and a day-vs-night decision is
+  deferred (would be marginal anyway).
 - The panel **contactor must be forced ON permanently** on HC/HP-tariff
   installations (or bypassed): WALTER now owns the off-peak schedule
   (`input_datetime.walter_hc_start` / `walter_hc_end`, defaults 22:00/06:00).
   Option Base subscribers and the bench have no contactor - nothing to do.
-  Verify with: mode FORCED... (now = MANUAL + max_level 100) -> boiler heats in
-  HP hours proves the line is live.
-- Enedis HC reform (2025-2027, seasonal windows) can shift the real off-peak
-  hours: keep the manual schedule in sync, or move to a Teleinfo TIC signal
-  (PTEC sensor) later.
+  Verify with: mode MANUAL + max_level 100 -> boiler heats in HP hours proves
+  the line is live.
+- **TIC (Teleinfo / HPHC) optional override** (`input_boolean.walter_tic_use`,
+  default off): when armed, the REAL-TIME off-peak signal is authoritative
+  within the 20:00-06:00 band - the static schedule is ignored (dashboard
+  greys the schedule inputs out). Outside the band TIC is never consulted, so
+  a daytime off-peak signal can never force heating. Wire it by making
+  `binary_sensor.tic_offpeak` track your TIC PTEC sensor; entity missing/off
+  = schedule rules. Users without a TIC device are unaffected.
+- Daytime HC window (`input_datetime.walter_hc_day_start/end`, defaults
+  12:00/14:00) exists in the data model as `binary_sensor.walter_hc_day_active`
+  but is INERT ("planned"): no mode reacts to it in this release.
+- Enedis HC reform (2025-2027, seasonal windows): the optional TIC override
+  (above) absorbs real-world off-peak shifts at night; daytime seasonal slots
+  stay deferred.
 - v2 (parked): tune HC behavior with weather forecast + household behaviour
   prediction.
 
@@ -36,9 +51,9 @@ instance (device entities have the `salon_` prefix).
 - `input_boolean.walter_tank_lockout` - emergency latch. Set by the emergency
   automation; while ON, `walter_mode_control` is a no-op (no mode / HC flip /
   cap change can re-assert 100 % on a hot tank). Manual clear re-enables.
-- `automation.walter_mode_control` triggers: mode, `walter_hc_active`,
-  `walter_max_level`, `walter_tank_lockout`. OFF explicitly zeroes the level
-  (avoids stale 100 %).
+- `automation.walter_mode_control` triggers: mode, `binary_sensor.walter_hc_active`
+  (the EFFECTIVE night-forcing signal, see template sensors), `walter_max_level`,
+  `walter_tank_lockout`. OFF explicitly zeroes the level (avoids stale 100 %).
 - Sanitary / thermostat-cut alarm (works with NO tank probe):
   - `binary_sensor.walter_full_power_pumping`:
     router_level >= max(80, max_level-5) AND load current > 0.5 A
@@ -64,13 +79,25 @@ instance (device entities have the `salon_` prefix).
 - `input_select.walter_mode` - OFF | SOLAR | HC/HP | MANUAL
 - `input_number.walter_max_level` (0-100, default 100) - global cap / manual dial
 - `input_datetime.walter_hc_start` (22:00) / `walter_hc_end` (06:00)
+- `input_datetime.walter_hc_day_start` (12:00) / `walter_hc_day_end` (14:00) -
+  daytime HC window, INERT this release
+- `input_boolean.walter_tic_use` - master toggle for the optional TIC override
 - `input_boolean.walter_tank_lockout`
 - `input_boolean.walter_thermostat_detection` (master switch for the sanitary alarm)
-- `input_boolean.walter_sanitary_notified` (dedupe latch)
+- `input_boolean.walter_sanitary_notified` (dedupe latch, hidden from the UI)
 - `input_number.walter_tank_probe_bench` (0-80 °C, default 60) - bench tank temp
 
 ## Template sensors (config-entry based)
-- `binary_sensor.walter_hc_active` - inside the HC window (overnight wrap)
+- `binary_sensor.walter_hc_active` - EFFECTIVE night-forcing signal:
+  ON only within the 20:00-06:00 band, and there: TIC signal if
+  `walter_tic_use` is on, else the scheduled night window (overnight wrap on
+  `walter_hc_start/end`). Daytime is always OFF. Consumed by the mode control
+  and shown on the dashboard.
+- `binary_sensor.walter_hc_day_active` - daytime HC window, informational
+  only (INERT).
+- `binary_sensor.walter_tic` - TIC off-peak signal gated to the night band
+  (display: "Signal TIC actif"). Reference entity: `binary_sensor.tic_offpeak`
+  (not wired on this instance).
 - `binary_sensor.walter_full_power_pumping` - max-power pumping signal
 - `sensor.walter_full_power_hours_24h` - history_stats of "on" time (24 h)
 - `sensor.walter_available_surplus` - max(0, -real_power)
