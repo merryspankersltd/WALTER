@@ -45,6 +45,16 @@ number:
     mode: slider
     on_value:
       then:
+        # Global hard cap (mirrors HA input_number.walter_max_level).
+        # Applies to EVERY write path (auto routing and manual/HC forcing).
+        - if:
+            condition:
+              lambda: 'return id(router_level).state > id(router_max_level).state;'
+            then:
+              - number.set:
+                  id: router_level
+                  value: !lambda return id(router_max_level).state;
+              - return:
         - number.set:
             id: regulator_opening
             value: !lambda return id(router_level).state;
@@ -64,6 +74,25 @@ number:
                     - switch.is_on: activate
                   then:
                     - light.turn_on: green_led
+  - platform: template
+    name: "Router Max Level"
+    id: router_max_level
+    min_value: 0
+    max_value: 100
+    step: 1
+    unit_of_measurement: "%"
+    optimistic: True
+    restore_value: True
+    mode: slider
+    on_value:
+      then:
+        - if:
+            condition:
+              lambda: 'return id(router_level).state > id(router_max_level).state;'
+            then:
+              - number.set:
+                  id: router_level
+                  value: !lambda return id(router_max_level).state;
   - platform: template
     name: "Regulator Opening"
     id: regulator_opening
@@ -150,7 +179,7 @@ script:
           }
 
           double delta = -1*(real_power_state-target_grid_exchange_state)*reactivity_state/1000;
-          // Determine the new regulator status
+          // Determine the new regulator status, capped by router_max_level
           double new_router_level = id(router_level).state + delta;
-          new_router_level = std::max(0.0, std::min(100.0, new_router_level));
+          new_router_level = std::max(0.0, std::min(id(router_max_level).state, new_router_level));
           id(router_level).publish_state(new_router_level);

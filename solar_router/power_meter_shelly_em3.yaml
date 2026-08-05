@@ -35,7 +35,10 @@ substitutions:
   # substitution block overriding the merged one replaces it entirely.
   power_meter_activated_at_start: "0"
   power_sign: "1"
-  consumption_sensor_internal: "false"
+  # The Shelly EM3 only exposes a NET power (total_act_power): the per-phase
+  # "consumption" template below is never written in this package, so it stayed
+  # stuck at "unknown" in HA. Hide it instead of shipping dead weight.
+  consumption_sensor_internal: "true"
   # This package specifics
   power_meter_emeter_id: "0"
   power_meter_auth_header: ""
