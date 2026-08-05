@@ -47,6 +47,8 @@ number:
       then:
         # Global hard cap (mirrors HA input_number.walter_max_level).
         # Applies to EVERY write path (auto routing and manual/HC forcing).
+        # If clamped, number.set re-triggers this handler with the capped value,
+        # which then applies the regulator + LED logic below.
         - if:
             condition:
               lambda: 'return id(router_level).state > id(router_max_level).state;'
@@ -54,26 +56,26 @@ number:
               - number.set:
                   id: router_level
                   value: !lambda return id(router_max_level).state;
-              - return:
-        - number.set:
-            id: regulator_opening
-            value: !lambda return id(router_level).state;
-        - if:
-            condition:
-              number.in_range:
-                id: router_level
-                above: 1
-            then:
-              - light.turn_on:
-                  id: green_led
-                  effect: blink
             else:
-              - light.turn_off: green_led
+              - number.set:
+                  id: regulator_opening
+                  value: !lambda return id(router_level).state;
               - if:
                   condition:
-                    - switch.is_on: activate
+                    number.in_range:
+                      id: router_level
+                      above: 1
                   then:
-                    - light.turn_on: green_led
+                    - light.turn_on:
+                        id: green_led
+                        effect: blink
+                  else:
+                    - light.turn_off: green_led
+                    - if:
+                        condition:
+                          - switch.is_on: activate
+                        then:
+                          - light.turn_on: green_led
   - platform: template
     name: "Router Max Level"
     id: router_max_level
