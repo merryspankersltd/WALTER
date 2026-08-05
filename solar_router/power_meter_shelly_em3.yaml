@@ -149,9 +149,22 @@ sensor:
     update_interval: never
 
 time:
+  # Poll cadence note (decision 2026-08-05, being validated):
+  # The meter was polled every second (/1). Each poll opens/closes an
+  # esp_http_client TLS-able connection every second; over hours this provokes
+  # a stale-transport use-after-free inside ESP-IDF's tcp_transport
+  # (LoadProhibited in base_poll_read / transport_ssl.c, "CRASH DETECTED ON
+  # PREVIOUS BOOT" ~hourly on the old build, once after ~13h on the new one).
+  # No upstream fix exists as of 2026.7.3. We therefore poll every 2 seconds
+  # (/2): ~2x less connection churn. For a 2400W boiler this loses ~1s of
+  # reaction time, which is acceptable. A 24h test is running to check the
+  # new crash rate before this becomes permanent; if crashes persist at the
+  # same rate the poll frequency is not the trigger and we revisit
+  # (e.g. Modbus TCP instead of HTTP). Revisit if a future ESPHome fixes the
+  # http_request/IDF transport reuse race.
   - platform: sntp
     on_time:
-      - seconds: /1
+      - seconds: /2
         then:
           - if:
               condition:
