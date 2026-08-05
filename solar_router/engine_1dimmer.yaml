@@ -183,5 +183,5 @@ script:
           double delta = -1*(real_power_state-target_grid_exchange_state)*reactivity_state/1000;
           // Determine the new regulator status, capped by router_max_level
           double new_router_level = id(router_level).state + delta;
-          new_router_level = std::max(0.0, std::min(id(router_max_level).state, new_router_level));
+          new_router_level = std::max(0.0, std::min((double) id(router_max_level).state, new_router_level));
           id(router_level).publish_state(new_router_level);
