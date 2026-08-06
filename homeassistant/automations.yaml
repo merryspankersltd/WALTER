@@ -132,6 +132,7 @@ automation:
             {{ states('sensor.salon_walter_dimmer_heatsink_temperature') }} °C,
             load {{ states('sensor.salon_walter_dimmer_load_current') }} A.
           data:
+            clickAction: "/lovelace/dashboard-walter"
             url: "/lovelace/dashboard-walter"
     mode: single
 
@@ -176,6 +177,7 @@ automation:
           title: "WALTER: hardware alarm"
           message: "{{ trigger.to_state.name }} is ON."
           data:
+            clickAction: "/lovelace/dashboard-walter"
             url: "/lovelace/dashboard-walter"
     mode: single
 
