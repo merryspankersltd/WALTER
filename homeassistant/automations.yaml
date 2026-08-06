@@ -131,6 +131,7 @@ automation:
             Dimmer power cut — heatsink
             {{ states('sensor.salon_walter_dimmer_heatsink_temperature') }} °C,
             load {{ states('sensor.salon_walter_dimmer_load_current') }} A.
+            If the app cannot open, check your WireGuard connection.
           data:
             clickAction: "/lovelace/dashboard-walter"
             url: "/lovelace/dashboard-walter"
@@ -175,7 +176,9 @@ automation:
       - service: notify.mobile_app_pixel_5
         data:
           title: "WALTER: hardware alarm"
-          message: "{{ trigger.to_state.name }} is ON."
+          message: >-
+            {{ trigger.to_state.name }} is ON.
+            If the app cannot open, check your WireGuard connection.
           data:
             clickAction: "/lovelace/dashboard-walter"
             url: "/lovelace/dashboard-walter"
