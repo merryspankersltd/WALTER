@@ -121,6 +121,8 @@ instance (device entities have the `salon_` prefix).
 - binary_sensor.salon_walter_boiler_not_powered / current_sensor_failure
 
 ## Firmware follow-up (this instance is a fork)
-- Add `router_max_level` number + `std::min` clamp in `energy_regulation`
-  (`engine_1dimmer.yaml`) so SOLAR auto-routing respects the cap. Then have
-  `walter_mode_control` sync firmware `router_max_level` <- `walter_max_level`.
+- [DONE] `router_max_level` number + `std::min` clamp in `energy_regulation`
+  (`engine_1dimmer.yaml`) so SOLAR auto-routing respects the cap, defaulting to
+  100 on fresh boot (`initial_value`). Deployed 2026-08-06 (config_hash 0xb16c69f2).
+- [DONE] `walter_mode_control` syncs firmware `router_max_level` <- `walter_max_level`
+  as its first action on every trigger (mode / HC tick / cap change / lockout).
