@@ -94,3 +94,128 @@ automation:
 #        ...
 # Use instead the scheduler_forced_run package in the ESP (Begin/End hours),
 # the router itself then manages the window with less complexity.
+# ---------- 6. Notifications ------------------------------------------------
+# All notifications are delivered from Home Assistant (mobile push via the
+# companion app, persistent notifications in the UI). The ESP32 remains the
+# alarm *source*: local safety cutouts keep working even if WiFi/HA are down.
+# The ESP32 exposes these problem sensors:
+#   binary_sensor.<device>_dimmer_safety_active
+#   binary_sensor.<device>_triac_stuck_on
+#   binary_sensor.<device>_boiler_not_powered
+#   binary_sensor.<device>_current_sensor_failure
+#
+# Resolved notifications dismiss the original via notification_id.
+
+# --- 6a. Safety cutout (heatsink overheat or overcurrent) -> mobile push ---
+  - id: walter_safety_cutout_notify
+    alias: "WALTER: safety cutout alert"
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.salon_walter_dimmer_safety_active
+        to: "on"
+        for: "00:00:30"
+    action:
+      - service: persistent_notification.create
+        data:
+          notification_id: walter_safety_cutout
+          title: "WALTER: safety cutout active"
+          message: >-
+            The dimmer safety has cut power (heatsink overheat or overcurrent).
+            Heatsink: {{ states('sensor.salon_walter_dimmer_heatsink_temperature') }} °C,
+            load current: {{ states('sensor.salon_walter_dimmer_load_current') }} A.
+            Check the heatsink fan, NTC contact and the load.
+      - service: notify.mobile_app_pixel_5
+        data:
+          title: "WALTER: safety cutout"
+          message: >-
+            Dimmer power cut — heatsink
+            {{ states('sensor.salon_walter_dimmer_heatsink_temperature') }} °C,
+            load {{ states('sensor.salon_walter_dimmer_load_current') }} A.
+    mode: single
+
+  - id: walter_safety_cutout_clear
+    alias: "WALTER: safety cutout resolved"
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.salon_walter_dimmer_safety_active
+        to: "off"
+        for: "00:00:30"
+    action:
+      - service: persistent_notification.dismiss
+        data:
+          notification_id: walter_safety_cutout
+      - service: notify.mobile_app_pixel_5
+        data:
+          title: "WALTER: safety cutout resolved"
+          message: "Dimmer safety has been restored."
+    mode: single
+
+# --- 6b. Hardware alarms (triac stuck / boiler not powered / CT fail) ------
+  - id: walter_hardware_alarm_notify
+    alias: "WALTER: hardware alarm alert"
+    trigger:
+      - platform: state
+        entity_id:
+          - binary_sensor.salon_walter_triac_stuck_on
+          - binary_sensor.salon_walter_boiler_not_powered
+          - binary_sensor.salon_walter_current_sensor_failure
+        to: "on"
+        for: "00:00:30"
+    action:
+      - service: persistent_notification.create
+        data:
+          notification_id: "walter_hardware_{{ trigger.to_state.entity_id.split('.')[1].split('_walter_')[1] }}"
+          title: "WALTER: hardware alarm"
+          message: >-
+            {{ trigger.to_state.name }} is ON.
+            Load current: {{ states('sensor.salon_walter_dimmer_load_current') }} A.
+      - service: notify.mobile_app_pixel_5
+        data:
+          title: "WALTER: hardware alarm"
+          message: "{{ trigger.to_state.name }} is ON."
+    mode: single
+
+  - id: walter_hardware_alarm_clear
+    alias: "WALTER: hardware alarm resolved"
+    trigger:
+      - platform: state
+        entity_id:
+          - binary_sensor.salon_walter_triac_stuck_on
+          - binary_sensor.salon_walter_boiler_not_powered
+          - binary_sensor.salon_walter_current_sensor_failure
+        to: "off"
+        for: "00:00:30"
+    action:
+      - service: persistent_notification.dismiss
+        data:
+          notification_id: "walter_hardware_{{ trigger.to_state.entity_id.split('.')[1].split('_walter_')[1] }}"
+    mode: single
+
+# --- 6c. WALTER node offline (no mobile push, persistent only) --------------
+  - id: walter_node_offline_notify
+    alias: "WALTER: node offline alert"
+    trigger:
+      - platform: template
+        value_template: "{{ not has_value('sensor.salon_walter_real_power') }}"
+        for: "00:05:00"
+    action:
+      - service: persistent_notification.create
+        data:
+          notification_id: walter_node_offline
+          title: "WALTER: node offline"
+          message: >-
+            The WALTER ESP32 has been unreachable for 5 minutes.
+            Local safety cutouts keep working, but solar routing is off.
+    mode: single
+
+  - id: walter_node_offline_clear
+    alias: "WALTER: node offline resolved"
+    trigger:
+      - platform: template
+        value_template: "{{ has_value('sensor.salon_walter_real_power') }}"
+        for: "00:02:00"
+    action:
+      - service: persistent_notification.dismiss
+        data:
+          notification_id: walter_node_offline
+    mode: single
